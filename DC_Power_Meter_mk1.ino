@@ -22,7 +22,12 @@ void setup() {
   
   //second,the INA219 module
   pm_handler.begin();
+  //just to avoid initial zeroes
+  V=get_voltage();
+  I=get_current();
+  P=get_power();
   Timer1.initialize(UPDATE_INTERVAL_US);
+  delay(1000);
   Timer1.attachInterrupt(update_data);
   /*
   at this moment,INA219 will run with 32V,2A calibration
