@@ -36,8 +36,8 @@ class logger_gui(QtWidgets.QMainWindow,Ui_power_logger_gui):
 		self.plotter_buffer_cy=[]
 		self.plotter_buffer_py=[]
 		
-		self.update_rate=int(self.txtupdaterate.text())
-		
+		self.update_rate=20
+		self.len_buffer=int((1.0/self.update_rate)*1000.0)
 		self.serial_obj=serial.Serial()
 		self.serial_obj.timeout=1
 		self.serial_stop_event=threading.Event()
@@ -71,7 +71,9 @@ class logger_gui(QtWidgets.QMainWindow,Ui_power_logger_gui):
 				self.serial_obj.port=str(self.cboportlist.currentText())
 				self.serial_obj.baudrate=self.txtbaudrate.text()
 				self.serial_obj.open()
-				self.timer.setInterval((1/self.update_rate)*1000)
+				#self.update_rate=int(self.txtupdaterate.text())
+				self.timer.setInterval(1000)
+				self.len_buffer=int((1.0/self.update_rate)*1000.0)
 				self.timer.start()
 				#return
 				self.serial_connect=True
@@ -109,6 +111,7 @@ class logger_gui(QtWidgets.QMainWindow,Ui_power_logger_gui):
 		self.cboportlist.addItems(port_list)
 		
 	def plotupdater(self):
+		
 		self.plotview_V.clear()
 		self.plotview_C.clear()
 		self.plotview_P.clear()
@@ -118,7 +121,7 @@ class logger_gui(QtWidgets.QMainWindow,Ui_power_logger_gui):
 		self.plotview_V.plot(self.plotter_buffer_x,self.plotter_buffer_vy)
 		self.plotview_C.plot(self.plotter_buffer_x,self.plotter_buffer_cy)
 		self.plotview_P.plot(self.plotter_buffer_x,self.plotter_buffer_py)
-		
+			
 		#print "updating"
 	def serial_function(self,stop_event):
 		x=0
@@ -140,17 +143,18 @@ class logger_gui(QtWidgets.QMainWindow,Ui_power_logger_gui):
 						self.plotter_buffer_vy.append(voltage)
 						self.plotter_buffer_cy.append(current)
 						self.plotter_buffer_py.append(power)
+						updr=int(-1*self.len_buffer)
+						#print updr
+						self.plotter_buffer_vy=self.plotter_buffer_vy[updr:]
+						self.plotter_buffer_cy=self.plotter_buffer_cy[updr:]
+						self.plotter_buffer_py=self.plotter_buffer_py[updr:]
 						
-						self.plotter_buffer_vy=self.plotter_buffer_vy[-100:]
-						self.plotter_buffer_cy=self.plotter_buffer_cy[-100:]
-						self.plotter_buffer_py=self.plotter_buffer_py[-100:]
-						
-						self.plotter_buffer_x=self.plotter_buffer_x[-100:]
+						self.plotter_buffer_x=self.plotter_buffer_x[updr:]
 					except Exception,e: print str(e)
 				#plotter.plot([x],[y])
 				#print len(self.plotter_buffer)
-				time.sleep(0.001)
-				x+=1
+				#time.sleep(0.001)
+				x+=50
 			else:
 				time.sleep(0.01)
 if __name__=="__main__":
