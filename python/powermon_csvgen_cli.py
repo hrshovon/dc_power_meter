@@ -9,7 +9,7 @@ if len(sys.argv)!=3:
 port=str(sys.argv[1])
 filename=str(sys.argv[2])
 try:
-    s_handler=serial.Serial(port=port,baudrate=9600)
+    s_handler=serial.Serial(port=port,baudrate=9600,timeout=1)
     while(True):
         try:
             rdln=s_handler.readline()
